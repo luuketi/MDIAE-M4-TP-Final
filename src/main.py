@@ -2,6 +2,7 @@ from packet import SACDPacket
 from packet_reader import PacketReader
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser(description="SAC-D packet reader.")
     parser.add_argument("file_name", help="File name to read.")

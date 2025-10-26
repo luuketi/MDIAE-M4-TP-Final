@@ -3,6 +3,7 @@ import struct
 from datetime import datetime
 from typing import Any, Self
 
+
 class Packet(ABC):
     @classmethod
     @abstractmethod
@@ -20,7 +21,6 @@ class Packet(ABC):
 
 
 class SACDPacket(Packet):
-
     def __init__(self, timestamp: datetime, voltage: float):
         super().__init__()
         self.timestamp = timestamp
@@ -36,7 +36,9 @@ class SACDPacket(Packet):
     def _read_timestamp(cls, packet_bytes: bytes) -> datetime:
         TIMESTAMP_POSITION = 598
         TIMESTAMP_LEN = 4  # 4 bytes for 32-bit timestamp
-        timestamp_raw = packet_bytes[TIMESTAMP_POSITION: TIMESTAMP_POSITION + TIMESTAMP_LEN]
+        timestamp_raw = packet_bytes[
+            TIMESTAMP_POSITION : TIMESTAMP_POSITION + TIMESTAMP_LEN
+        ]
         timestamp = struct.unpack("<L", timestamp_raw)[0]
         return datetime.fromtimestamp(timestamp)
 
@@ -44,7 +46,7 @@ class SACDPacket(Packet):
     def _read_voltage(cls, packet_bytes):
         VOLTAGE_POSITION = 2354
         VOLTAGE_LEN = 2  # 2 bytes for 16-bit voltage
-        voltage_raw = packet_bytes[VOLTAGE_POSITION: VOLTAGE_POSITION + VOLTAGE_LEN]
+        voltage_raw = packet_bytes[VOLTAGE_POSITION : VOLTAGE_POSITION + VOLTAGE_LEN]
         voltage = struct.unpack(">H", voltage_raw)[0] * 0.01873128 - 38.682956
         return voltage
 
@@ -54,4 +56,3 @@ class SACDPacket(Packet):
 
     def values_to_plot(self) -> (Any, Any):
         return self.timestamp, self.voltage
-

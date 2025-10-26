@@ -2,13 +2,13 @@
 # Makefile for the SAC-D packet reader project.
 
 # List of all known targets in this Makefile.
-KNOWN_TARGETS := all install run clean
+KNOWN_TARGETS := all install run clean format
 
 # This variable will hold all command-line arguments that are not known targets.
 # For example, if you run `make run data/raw.dat`, ARGS will be `data/raw.dat`.
 ARGS := $(filter-out $(KNOWN_TARGETS),$(MAKECMDGOALS))
 
-.PHONY: all install run clean
+.PHONY: all install run clean format
 
 # Default target executed when you run `make`
 all:
@@ -16,6 +16,7 @@ all:
 	@echo "  install          - Install project dependencies"
 	@echo "  run <ARGS>       - Run the script on the specified arguments"
 	@echo "  clean            - Remove generated files"
+	@echo "  format           - Format python files using ruff"
 
 # Install dependencies using poetry
 install:
@@ -29,3 +30,7 @@ run:
 # Clean up generated files
 clean:
 	rm -f voltages.png boxplot-voltages-*.png output.txt
+
+# Format python files
+format:
+	poetry run ruff format .
