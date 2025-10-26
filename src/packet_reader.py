@@ -7,13 +7,33 @@ import seaborn as sns
 
 
 class PacketReader:
+    """
+    A reader for binary files containing data packets.
+
+    This class provides functionality to read a binary file, parse it into a
+    series of data packets, and then generate various plots from the extracted data.
+    """
+
     def __init__(self, file_path: str):
+        """
+        Initialize the PacketReader.
+
+        Args:
+            file_path: The path to the binary file to be read.
+        """
         self.file_path = file_path
         self.file = open(file_path, "rb")
         self.data = []
         self.PacketClass = None
 
     def read_as(self, PacketClass: Type[Packet]) -> None:
+        """
+        Read the file and parse it as packets of a specific type.
+
+        Args:
+            PacketClass: The class of the packet to use for parsing.
+                         This class should be a subclass of `Packet`.
+        """
         self.PacketClass = PacketClass
         self._validate_file_size()
         while packet_bytes := self.file.read(self.PacketClass.packet_size()):
@@ -21,6 +41,12 @@ class PacketReader:
             self.data.append(packet)
 
     def _validate_file_size(self) -> None:
+        """
+        Validate that the file size is a multiple of the packet size.
+        
+        Raises:
+            ValueError: If the file size is not a multiple of the packet size.
+        """
         file_size = os.path.getsize(self.file_path)
         if file_size % self.PacketClass.packet_size() != 0:
             raise ValueError(
@@ -35,6 +61,16 @@ class PacketReader:
         y_axis: str,
         y_label: str,
     ) -> None:
+        """
+        Generate a boxplot of the packet data over time intervals.
+
+        Args:
+            output_file: The path to save the generated plot image.
+            interval_in_hours: The time interval in hours for grouping the data.
+            x_axis: The name of the attribute to use for the x-axis (usually time).
+            y_axis: The name of the attribute to use for the y-axis (the value to plot).
+            y_label: The label for the y-axis.
+        """
         x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
         df = pd.DataFrame({x_axis: x, y_axis: y})
         df = df.set_index([x_axis])
@@ -74,6 +110,17 @@ class PacketReader:
         x_label: str,
         y_label: str,
     ) -> None:
+        """
+        Generate a line plot of the packet data.
+
+        Args:
+            output_file: The path to save the generated plot image.
+            x_axis: The name of the attribute for the x-axis.
+            y_axis: The name of the attribute for the y-axis.
+            title: The title of the plot.
+            x_label: The label for the x-axis.
+            y_label: The label for the y-axis.
+        """
         x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
         plt.plot(x, y, marker="o", linestyle="-", color="blue", linewidth=1)
         plt.xlabel(x_label)
@@ -84,5 +131,6 @@ class PacketReader:
         plt.savefig(output_file)
 
     def __del__(self) -> None:
+        """Ensure the file is closed when the object is deleted."""
         if hasattr(self, "file") and self.file is not None:
             self.file.close()
