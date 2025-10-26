@@ -27,15 +27,17 @@ class PacketReader:
                 f"Invalid file size. Expected a multiple of {self.PacketClass.packet_size()}, but found {file_size}"
             )
 
-    def boxplot(self, output_file: str, interval_in_hours: int) -> None:
-        timestamps, voltages = zip(*[packet.values_to_plot() for packet in self.data])
-        df = pd.DataFrame(
-            {
-                "datetime": timestamps,
-                "voltages": voltages,
-            }
-        )
-        df = df.set_index(["datetime"])
+    def boxplot(
+        self,
+        output_file: str,
+        interval_in_hours: int,
+        x_axis: str,
+        y_axis: str,
+        y_label: str,
+    ) -> None:
+        x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
+        df = pd.DataFrame({x_axis: x, y_axis: y})
+        df = df.set_index([x_axis])
 
         # Group by n-hour intervals of the day
         df["hour"] = df.index.hour
@@ -53,23 +55,30 @@ class PacketReader:
         )
 
         fig, ax = plt.subplots(figsize=(15, 7))
-        sns.boxplot(x="hourly_interval", y="voltages", data=df, ax=ax, palette="hls")
+        sns.boxplot(x="hourly_interval", y=y_axis, data=df, ax=ax, palette="hls")
         ax.set_title(
-            f"Distribution of Voltages by {interval_in_hours}-Hour Intervals of the Day"
+            f"Distribution of {y_label.title()} by {interval_in_hours}-Hour Intervals of the Day"
         )
         ax.set_xlabel(f"Time Interval ({interval_in_hours}-hour)")
-        ax.set_ylabel("Voltage (V)")
-
+        ax.set_ylabel(y_label)
         ax.grid(True, linestyle="--", alpha=0.7)
         fig.tight_layout()
         fig.savefig(output_file)
 
-    def plot(self, output_file: str) -> None:
-        timestamps, voltages = zip(*[packet.values_to_plot() for packet in self.data])
-        plt.plot(timestamps, voltages, marker="o", linestyle="-", color="blue")
-        plt.xlabel("Date")
-        plt.ylabel("Voltage (v)")
-        plt.title("Voltages")
+    def plot(
+        self,
+        output_file: str,
+        x_axis: str,
+        y_axis: str,
+        title: str,
+        x_label: str,
+        y_label: str,
+    ) -> None:
+        x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
+        plt.plot(x, y, marker="o", linestyle="-", color="blue", linewidth=1)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
         plt.grid(True)
         plt.gcf().autofmt_xdate()
         plt.savefig(output_file)
