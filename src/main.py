@@ -1,5 +1,5 @@
-from packet import SACDPacket
-from packet_reader import PacketReader
+from .packet import SACDPacket
+from .packet_reader import PacketReader
 import argparse
 
 

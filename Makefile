@@ -34,3 +34,15 @@ clean:
 # Format python files
 format:
 	poetry run ruff format .
+
+.PHONY: tests
+tests:
+	poetry run pytest
+
+.PHONY: coverage
+coverage:
+	poetry run pytest --cov=src --cov-report=term-missing
+
+.PHONY: lint
+lint:
+	poetry run ruff check .

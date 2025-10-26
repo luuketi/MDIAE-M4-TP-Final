@@ -1,7 +1,7 @@
 import os
 from typing import Type
 import matplotlib.pyplot as plt
-from packet import Packet
+from .packet import Packet
 import pandas as pd
 import seaborn as sns
 
@@ -43,7 +43,7 @@ class PacketReader:
     def _validate_file_size(self) -> None:
         """
         Validate that the file size is a multiple of the packet size.
-        
+
         Raises:
             ValueError: If the file size is not a multiple of the packet size.
         """
@@ -100,6 +100,7 @@ class PacketReader:
         ax.grid(True, linestyle="--", alpha=0.7)
         fig.tight_layout()
         fig.savefig(output_file)
+        plt.close(fig)
 
     def plot(
         self,
@@ -129,6 +130,7 @@ class PacketReader:
         plt.grid(True)
         plt.gcf().autofmt_xdate()
         plt.savefig(output_file)
+        plt.clf()
 
     def __del__(self) -> None:
         """Ensure the file is closed when the object is deleted."""
