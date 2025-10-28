@@ -25,7 +25,7 @@ install:
 # Run the main script
 # Usage: make run path/to/your/datafile.dat
 run:
-	poetry run python src/main.py $(ARGS)
+	poetry run python -m src.main $(ARGS)
 
 # Clean up generated files
 clean:
