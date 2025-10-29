@@ -77,6 +77,14 @@ class TestLinePlotter:
         assert result is plotter  # Test method chaining
         mock_line.assert_called_once()
         call_args = mock_line.call_args
+
+        # Verify the DataFrame was passed correctly
+        df = call_args[0][0]  # First positional argument is the DataFrame
+        assert "timestamp" in df.columns
+        assert "voltage" in df.columns
+        assert len(df) == len(small_sample_data)
+
+        # Verify keyword arguments
         assert call_args[1]["x"] == "timestamp"
         assert call_args[1]["y"] == "voltage"
         assert call_args[1]["title"] == "Test Plot"
@@ -84,25 +92,36 @@ class TestLinePlotter:
         assert call_args[1]["labels"]["voltage"] == "Voltage (V)"
 
     def test_plot_extracts_correct_values(self, small_sample_data):
-        """Test that plot() extracts correct x and y values."""
+        """Test that plot() extracts correct values into the figure."""
         plotter = LinePlotter.using(small_sample_data)
-        plotter.plot(
-            values_to_plot=["timestamp", "voltage"],
-            x_axis="timestamp",
-            y_axis="voltage",
-            x_label="Time",
-            y_label="Voltage (V)",
-            title="Test Plot",
-        )
 
-        expected_x = (
-            datetime(2024, 1, 1, 0, 0),
-            datetime(2024, 1, 1, 1, 0),
-            datetime(2024, 1, 1, 2, 0),
-        )
-        expected_y = (30.0, 32.0, 35.0)
-        assert plotter._x == expected_x
-        assert plotter._y == expected_y
+        with patch("plotly.express.line") as mock_line:
+            mock_figure = MagicMock()
+            mock_line.return_value = mock_figure
+
+            plotter.plot(
+                values_to_plot=["timestamp", "voltage"],
+                x_axis="timestamp",
+                y_axis="voltage",
+                x_label="Time",
+                y_label="Voltage (V)",
+                title="Test Plot",
+            )
+
+            # Get the DataFrame that was passed to plotly
+            call_args = mock_line.call_args
+            df = call_args[0][0]
+
+            # Verify the data in the DataFrame
+            expected_timestamps = [
+                datetime(2024, 1, 1, 0, 0),
+                datetime(2024, 1, 1, 1, 0),
+                datetime(2024, 1, 1, 2, 0),
+            ]
+            expected_voltages = [30.0, 32.0, 35.0]
+
+            assert list(df["timestamp"]) == expected_timestamps
+            assert list(df["voltage"]) == expected_voltages
 
     def test_show_calls_figure_show(self, small_sample_data):
         """Test that show() calls the figure's show method."""
@@ -139,6 +158,20 @@ class TestLinePlotter:
 
         assert result is plotter  # Test method chaining
         plotter._figure.write_image.assert_called_once_with("output.png")
+
+    def test_show_raises_error_without_plot(self, small_sample_data):
+        """Test that show() raises error if plot() hasn't been called."""
+        plotter = LinePlotter.using(small_sample_data)
+
+        with pytest.raises(ValueError, match="No plot has been created"):
+            plotter.show()
+
+    def test_export_raises_error_without_plot(self, small_sample_data):
+        """Test that export() raises error if plot() hasn't been called."""
+        plotter = LinePlotter.using(small_sample_data)
+
+        with pytest.raises(ValueError, match="No plot has been created"):
+            plotter.export("output.png")
 
 
 class TestBoxPlotter:
@@ -184,8 +217,7 @@ class TestBoxPlotter:
         )
 
         # Verify that data was extracted
-        assert len(plotter._x) == len(sample_data)
-        assert len(plotter._y) == len(sample_data)
+        assert len(plotter._data) == len(sample_data)
 
     def test_plot_with_different_intervals(self, sample_data):
         """Test that plot() works with different interval sizes."""
@@ -241,3 +273,17 @@ class TestBoxPlotter:
 
         assert result is plotter
         plotter._figure.write_image.assert_called_once_with("boxplot.png")
+
+    def test_show_raises_error_without_plot(self, sample_data):
+        """Test that show() raises error if plot() hasn't been called."""
+        plotter = BoxPlotter.using(sample_data)
+
+        with pytest.raises(ValueError, match="No plot has been created"):
+            plotter.show()
+
+    def test_export_raises_error_without_plot(self, sample_data):
+        """Test that export() raises error if plot() hasn't been called."""
+        plotter = BoxPlotter.using(sample_data)
+
+        with pytest.raises(ValueError, match="No plot has been created"):
+            plotter.export("boxplot.png")
