@@ -1,9 +1,6 @@
 import os
 from typing import Type
-import matplotlib.pyplot as plt
 from .packet import Packet
-import pandas as pd
-import seaborn as sns
 
 
 class PacketReader:
@@ -53,84 +50,8 @@ class PacketReader:
                 f"Invalid file size. Expected a multiple of {self.PacketClass.packet_size()}, but found {file_size}"
             )
 
-    def boxplot(
-        self,
-        output_file: str,
-        interval_in_hours: int,
-        x_axis: str,
-        y_axis: str,
-        y_label: str,
-    ) -> None:
-        """
-        Generate a boxplot of the packet data over time intervals.
-
-        Args:
-            output_file: The path to save the generated plot image.
-            interval_in_hours: The time interval in hours for grouping the data.
-            x_axis: The name of the attribute to use for the x-axis (usually time).
-            y_axis: The name of the attribute to use for the y-axis (the value to plot).
-            y_label: The label for the y-axis.
-        """
-        x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
-        df = pd.DataFrame({x_axis: x, y_axis: y})
-        df = df.set_index([x_axis])
-
-        # Group by n-hour intervals of the day
-        df["hour"] = df.index.hour
-        df["hourly_interval"] = df["hour"] // interval_in_hours
-
-        num_intervals = 24 // interval_in_hours
-        interval_labels = [
-            f"{i*interval_in_hours:02d}:00-{(i+1)*interval_in_hours:02d}:00"
-            for i in range(num_intervals)
-        ]
-        df["hourly_interval"] = pd.Categorical(
-            df["hourly_interval"].apply(lambda x: interval_labels[x]),
-            categories=interval_labels,
-            ordered=True,
-        )
-
-        fig, ax = plt.subplots(figsize=(15, 7))
-        sns.boxplot(x="hourly_interval", y=y_axis, data=df, ax=ax, palette="hls")
-        ax.set_title(
-            f"Distribution of {y_label.title()} by {interval_in_hours}-Hour Intervals of the Day"
-        )
-        ax.set_xlabel(f"Time Interval ({interval_in_hours}-hour)")
-        ax.set_ylabel(y_label)
-        ax.grid(True, linestyle="--", alpha=0.7)
-        fig.tight_layout()
-        fig.savefig(output_file)
-        plt.close(fig)
-
-    def plot(
-        self,
-        output_file: str,
-        x_axis: str,
-        y_axis: str,
-        title: str,
-        x_label: str,
-        y_label: str,
-    ) -> None:
-        """
-        Generate a line plot of the packet data.
-
-        Args:
-            output_file: The path to save the generated plot image.
-            x_axis: The name of the attribute for the x-axis.
-            y_axis: The name of the attribute for the y-axis.
-            title: The title of the plot.
-            x_label: The label for the x-axis.
-            y_label: The label for the y-axis.
-        """
-        x, y = zip(*[packet.values_to_plot(x_axis, y_axis) for packet in self.data])
-        plt.plot(x, y, marker="o", linestyle="-", color="blue", linewidth=1)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(title)
-        plt.grid(True)
-        plt.gcf().autofmt_xdate()
-        plt.savefig(output_file)
-        plt.clf()
+    def get_data(self) -> list[Packet]:
+        return self.data
 
     def __del__(self) -> None:
         """Ensure the file is closed when the object is deleted."""

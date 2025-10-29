@@ -64,13 +64,13 @@ def test_sacd_packet_values_to_plot():
     packet = SACDPacket(timestamp=timestamp, voltage=voltage)
 
     # Test retrieving a single value
-    assert packet.values_to_plot("timestamp") == (timestamp,)
+    assert packet.values_to_plot(["timestamp"]) == (timestamp,)
 
     # Test retrieving multiple values
-    assert packet.values_to_plot("timestamp", "voltage") == (timestamp, voltage)
+    assert packet.values_to_plot(["timestamp", "voltage"]) == (timestamp, voltage)
 
     # Test retrieving in a different order
-    assert packet.values_to_plot("voltage", "timestamp") == (voltage, timestamp)
+    assert packet.values_to_plot(["voltage", "timestamp"]) == (voltage, timestamp)
 
 
 def test_from_bytes_with_invalid_size():
