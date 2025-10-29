@@ -1,3 +1,4 @@
+
 from src.plotter import LinePlotter, BoxPlotter
 from .packet import SACDPacket
 from .packet_reader import PacketReader
@@ -19,6 +20,7 @@ def main():
         title="SAC-D Voltages",
         x_label="Timestamp",
         y_label="Voltage (V)",
+        show_eclipse=True,
     ).show().export("voltage_plot.png")
 
     boxplotter = BoxPlotter.using(reader.get_data())

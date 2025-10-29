@@ -1,3 +1,4 @@
+
 from abc import ABC, abstractmethod
 from typing import Self
 
@@ -111,6 +112,7 @@ class LinePlotter(Plotter):
                 - x_label (str): Label for the x-axis.
                 - y_label (str): Label for the y-axis.
                 - title (str): Title of the plot.
+                - show_eclipse (bool, optional): Whether to highlight eclipse periods.
 
         Returns:
             Self: The plotter instance for method chaining.
@@ -120,11 +122,16 @@ class LinePlotter(Plotter):
         x_label = kwargs["x_label"]
         y_label = kwargs["y_label"]
         title = kwargs["title"]
+        show_eclipse = kwargs.get("show_eclipse", False)
 
         df = self._transformer.to_dataframe(values_to_plot, [x_axis, y_axis])
 
         # Add a 'date' column to group by day
-        df["date"] = df[x_axis].dt.date
+        df["date"] = df[x_axis].dt.strftime("%Y-%m-%d")
+        
+        # Identify eclipse periods if requested
+        if show_eclipse:
+            df = self._transformer.identify_eclipse_periods(df, y_axis)
 
         self._figure = px.line(
             df,
@@ -134,6 +141,19 @@ class LinePlotter(Plotter):
             title=title,
             color="date",
         )
+
+        # Add eclipse period highlighting
+        if show_eclipse:
+            eclipse_periods = df[df["eclipse"]]
+            if not eclipse_periods.empty:
+                self._figure.add_scatter(
+                    x=eclipse_periods[x_axis],
+                    y=eclipse_periods[y_axis],
+                    mode="markers",
+                    marker=dict(color="red", size=3, symbol="circle"),
+                    name="Eclipse Period",
+                    showlegend=True,
+                )
 
         return self
 

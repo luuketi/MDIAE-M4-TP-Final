@@ -1,3 +1,4 @@
+
 from typing import List, Self
 import pandas as pd
 from src.packet import Packet
@@ -8,6 +9,7 @@ class DataTransformer:
 
     @classmethod
     def using(cls, data: list[Packet]) -> Self:
+        """Factory method to create a transformer with data."""
         obj = cls()
         obj._data = data
         return obj
@@ -43,18 +45,25 @@ class DataTransformer:
         Returns:
             DataFrame with added interval columns.
         """
-        df = df.set_index([timestamp_column])
-        df["hour"] = df.index.hour
-        df["hourly_interval"] = df["hour"] // interval_hours
+        df["hour"] = df[timestamp_column].dt.hour
+        df["hourly_interval"] = (df["hour"] // interval_hours) * interval_hours
+        df["hourly_interval"] = df["hourly_interval"].astype(str) + ":00"
+        return df
 
-        num_intervals = 24 // interval_hours
-        interval_labels = [
-            f"{i*interval_hours:02d}:00-{(i+1)*interval_hours:02d}:00"
-            for i in range(num_intervals)
-        ]
-        df["hourly_interval"] = pd.Categorical(
-            df["hourly_interval"].apply(lambda x: interval_labels[x]),
-            categories=interval_labels,
-            ordered=True,
-        )
+    @staticmethod
+    def identify_eclipse_periods(
+        df: pd.DataFrame, voltage_column: str, threshold: float = 32.0
+    ) -> pd.DataFrame:
+        """
+        Identify eclipse periods based on voltage drops.
+        
+        Args:
+            df: DataFrame with voltage data
+            voltage_column: Name of the voltage column
+            threshold: Voltage threshold below which we consider it an eclipse period
+            
+        Returns:
+            DataFrame with added 'eclipse' boolean column
+        """
+        df["eclipse"] = df[voltage_column] < threshold
         return df
