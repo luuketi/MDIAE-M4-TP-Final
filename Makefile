@@ -26,7 +26,7 @@ install:
 	poetry install
 
 # Run the main script
-# Usage: make run path/to/your/datafile.dat
+# Usage: make run path/to/your/datafile.bin
 run:
 	poetry run python -m src.main $(ARGS)
 

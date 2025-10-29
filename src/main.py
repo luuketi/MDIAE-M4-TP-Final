@@ -19,7 +19,7 @@ def main():
         title="SAC-D Voltages",
         x_label="Timestamp",
         y_label="Voltage (V)",
-    ).show()
+    ).show().export("voltage_plot.png")
 
     boxplotter = BoxPlotter.using(reader.get_data())
     boxplotter.plot(

@@ -87,7 +87,7 @@ class Plotter(ABC):
         """
         if self._figure is None:
             raise ValueError("No plot has been created. Call plot() first.")
-        self._figure.write_image(filename)
+        self._figure.write_image(filename, width=1920, height=1200, scale=2)
         return self
 
 

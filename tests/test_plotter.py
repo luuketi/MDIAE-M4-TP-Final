@@ -157,7 +157,9 @@ class TestLinePlotter:
         result = plotter.export("output.png")
 
         assert result is plotter  # Test method chaining
-        plotter._figure.write_image.assert_called_once_with("output.png")
+        plotter._figure.write_image.assert_called_once_with(
+            "output.png", width=1920, height=1200, scale=2
+        )
 
     def test_show_raises_error_without_plot(self, small_sample_data):
         """Test that show() raises error if plot() hasn't been called."""
@@ -272,7 +274,9 @@ class TestBoxPlotter:
         result = plotter.export("boxplot.png")
 
         assert result is plotter
-        plotter._figure.write_image.assert_called_once_with("boxplot.png")
+        plotter._figure.write_image.assert_called_once_with(
+            "boxplot.png", width=1920, height=1200, scale=2
+        )
 
     def test_show_raises_error_without_plot(self, sample_data):
         """Test that show() raises error if plot() hasn't been called."""
