@@ -56,5 +56,5 @@ make run CGSS_20150603_091700_10020150603085920_SACD_HKTMST.bin
 >          out.write(f"Offset: {offset}, Datetimes: {sorted(timestamps_)}\n")
 >  ```
 >
-> La posición **598** (4 bytes big-endian) contiene los mismos valores que la posición **100** (4 bytes little-endian)
+> La posición **598** (4 bytes big-endian) contiene valores similares (con diferencia de algunos segundos) a la posición **100** (4 bytes little-endian)
 > 
